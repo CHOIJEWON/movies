@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { validation } from './commons/utils';
+import { TestModule } from './test/test.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { validation } from './commons/utils';
       isGlobal: true,
       validationSchema: validation,
     }),
+    TestModule,
   ],
 })
 export class AppModule {}
