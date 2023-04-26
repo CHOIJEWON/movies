@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpExceptionFilter } from './commons/filters';
 import { validation } from './commons/utils';
+import { MovieModule } from './movie/movie.module';
 import { TestModule } from './test/test.module';
 
 @Module({
@@ -16,6 +19,13 @@ import { TestModule } from './test/test.module';
       validationSchema: validation,
     }),
     TestModule,
+    MovieModule,
+  ],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
   ],
 })
 export class AppModule {}

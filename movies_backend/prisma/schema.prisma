@@ -17,10 +17,10 @@ model Movie {
   id              Int            @id @default(autoincrement())
   title           String         @unique 
   originalTitle   String?
-  grade           Decimal
+  grade           Decimal        
   playTime        String
   synopsis        String
-  releaseDate     DateTime       
+  releaseDate     Int       
   Teaser          Teaser[]
   Genre           MovieGenre[]
   directorMovie   DirectedMovie[]
