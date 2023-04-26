@@ -15,15 +15,16 @@ model Test {
 
 model Movie {
   id              Int            @id @default(autoincrement())
-  title           String    
+  title           String         @unique 
   originalTitle   String?
   grade           Decimal
-  PlayTime        String
-  Synopsis        String
-  updateTime      DateTime       
+  playTime        String
+  synopsis        String
+  releaseDate     DateTime       
   Teaser          Teaser[]
   Genre           MovieGenre[]
   directorMovie   DirectedMovie[]
+  movieCast       MovieCast[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }
@@ -47,7 +48,7 @@ model MovieGenre {
 
 model Director {
   id              Int           @id @default(autoincrement())
-  directorName    String
+  directorName    String        @unique
   directedMovie   DirectedMovie[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -73,10 +74,21 @@ model Teaser {
   updatedAt       DateTime       @updatedAt
 }
 
-model Cast {
+model MovieCast {
   id              Int            @id @default(autoincrement())
-  actorName       String
   roleName        String? 
+  movie           Movie          @relation(fields: [movieId], references: [id])
+  movieId         Int
+  actor           Actor          @relation(fields: [actorId], references: [id] )
+  actorId         Int
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Actor {
+  id              Int            @id @default(autoincrement())
+  name            String
+  MovieCast       MovieCast[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }
