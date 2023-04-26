@@ -13,15 +13,14 @@ model Test {
     test        String
 }
 
-
-
 model Movie {
   id              Int            @id @default(autoincrement())
   title           String    
   originalTitle   String?
   grade           Decimal
   PlayTime        String
-  Synopsis        String       
+  Synopsis        String
+  updateTime      DateTime       
   Teaser          Teaser[]
   Genre           MovieGenre[]
   directorMovie   DirectedMovie[]
@@ -33,6 +32,8 @@ model Genre {
   id              Int           @id @default(autoincrement())
   genre           String
   movieGenre      MovieGenre[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 model MovieGenre {
   id              Int           @id @default(autoincrement())
@@ -40,12 +41,16 @@ model MovieGenre {
   movieId         Int
   genre           Genre         @relation(fields: [genreId], references: [id])
   genreId         Int   
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model Director {
   id              Int           @id @default(autoincrement())
   directorName    String
   directedMovie   DirectedMovie[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model DirectedMovie {
@@ -54,18 +59,24 @@ model DirectedMovie {
   movieId         Int
   director        Director      @relation(fields: [directorId], references: [id])
   directorId      Int
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 
 model Teaser {
-  id        Int      @id @default(autoincrement())
-  url       String 
-  movie     Movie    @relation(fields: [movieId], references: [id])
-  movieId   Int
+  id              Int      @id @default(autoincrement())
+  url             String 
+  movie           Movie    @relation(fields: [movieId], references: [id])
+  movieId         Int
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model Cast {
-  id          Int      @id @default(autoincrement())
-  actorName   String
-  roleName    String? 
+  id              Int            @id @default(autoincrement())
+  actorName       String
+  roleName        String? 
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
