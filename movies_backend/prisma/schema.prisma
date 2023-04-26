@@ -14,3 +14,58 @@ model Test {
 }
 
 
+
+model Movie {
+  id              Int            @id @default(autoincrement())
+  title           String    
+  originalTitle   String?
+  grade           Decimal
+  PlayTime        String
+  Synopsis        String       
+  Teaser          Teaser[]
+  Genre           MovieGenre[]
+  directorMovie   DirectedMovie[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Genre {
+  id              Int           @id @default(autoincrement())
+  genre           String
+  movieGenre      MovieGenre[]
+}
+model MovieGenre {
+  id              Int           @id @default(autoincrement())
+  movie           Movie         @relation(fields: [movieId], references: [id])
+  movieId         Int
+  genre           Genre         @relation(fields: [genreId], references: [id])
+  genreId         Int   
+}
+
+model Director {
+  id              Int           @id @default(autoincrement())
+  directorName    String
+  directedMovie   DirectedMovie[]
+}
+
+model DirectedMovie {
+  id              Int           @id @default(autoincrement())
+  movie           Movie         @relation(fields: [movieId], references: [id])
+  movieId         Int
+  director        Director      @relation(fields: [directorId], references: [id])
+  directorId      Int
+}
+
+
+model Teaser {
+  id        Int      @id @default(autoincrement())
+  url       String 
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  movieId   Int
+}
+
+model Cast {
+  id          Int      @id @default(autoincrement())
+  actorName   String
+  roleName    String? 
+}
