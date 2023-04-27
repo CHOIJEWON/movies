@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateMovieDto {
   @IsNotEmpty({
@@ -8,6 +8,7 @@ export class CreateMovieDto {
   })
   title: string;
 
+  @IsString()
   originalTitle?: string;
 
   @IsNumber()
@@ -29,4 +30,13 @@ export class CreateMovieDto {
 
   @IsNumber()
   releaseDate: number;
+}
+
+export class CreateMovieWithGenreDto extends CreateMovieDto {
+  genre: string;
+}
+
+export class associateMovieAndGenreDto {
+  movieId: number;
+  genreId: number;
 }

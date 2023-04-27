@@ -1,5 +1,8 @@
-import { Movie, PrismaClient } from '@prisma/client';
-import { CreateMovieDto } from 'src/commons/DTO/movie.dto';
+import { Movie, MovieGenre, PrismaClient } from '@prisma/client';
+import {
+  associateMovieAndGenreDto,
+  CreateMovieDto,
+} from 'src/commons/DTO/movie.dto';
 
 export class MovieRepository {
   prisma = new PrismaClient();
@@ -24,6 +27,18 @@ export class MovieRepository {
         playTime,
         synopsis,
         releaseDate,
+      },
+    });
+  }
+
+  async associateMovieAndGenre({
+    movieId,
+    genreId,
+  }: associateMovieAndGenreDto): Promise<MovieGenre> {
+    return await this.prisma.movieGenre.create({
+      data: {
+        movieId,
+        genreId,
       },
     });
   }

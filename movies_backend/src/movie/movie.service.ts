@@ -1,11 +1,15 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Movie, PrismaClient } from '@prisma/client';
-import { CreateMovieDto } from 'src/commons/DTO/movie.dto';
+import { Genre, Movie, PrismaClient } from '@prisma/client';
+import { CreateMovieWithGenreDto } from 'src/commons/DTO/movie.dto';
+import { GenreRepository } from 'src/genre/genre.repository';
 import { MovieRepository } from './movie.repository';
 
 @Injectable()
 export class MovieService {
-  constructor(private readonly movieRepository: MovieRepository) {}
+  constructor(
+    private readonly movieRepository: MovieRepository,
+    private readonly genrRepository: GenreRepository,
+  ) {}
 
   prisma = new PrismaClient();
 
@@ -17,11 +21,10 @@ export class MovieService {
     }
   }
 
-  async createMovie(createMovieDto: CreateMovieDto): Promise<Movie> {
-    let movie: Movie;
+  async createMovie(createMovieWithGenre: CreateMovieWithGenreDto) {
+    let response;
 
-    const { title, originalTitle, grade, playTime, synopsis, releaseDate } =
-      createMovieDto;
+    const { title, genre } = createMovieWithGenre;
     try {
       await this.prisma.$transaction(async () => {
         const existsMovie = await this.movieRepository.findMovieByTitle(title);
@@ -29,9 +32,41 @@ export class MovieService {
         if (existsMovie)
           throw new HttpException('this movie already exists', 409);
 
-        movie = await this.movieRepository.createMovie(createMovieDto);
+        const insertMovie: Movie = await this.movieRepository.createMovie(
+          createMovieWithGenre,
+        );
+
+        const insertGenre: Genre = await this.genrRepository.createGenre(genre);
+
+        const {
+          id: movieId,
+          title: movieTitle,
+          originalTitle,
+          grade,
+          playTime,
+          synopsis,
+          releaseDate,
+        } = insertMovie;
+
+        const { id: genreId, genre: movieGenre } = insertGenre;
+
+        await this.movieRepository.associateMovieAndGenre({
+          movieId,
+          genreId,
+        });
+
+        response = {
+          title: movieTitle,
+          originalTitle,
+          grade,
+          playTime,
+          synopsis,
+          releaseDate,
+          genre: movieGenre,
+        };
       });
-      return movie;
+
+      return response;
     } catch (e) {
       throw new HttpException(e.message, 500);
     } finally {
