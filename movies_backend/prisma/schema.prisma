@@ -16,6 +16,7 @@ model Test {
 model Movie {
   id              Int            @id @default(autoincrement())
   title           String         @unique 
+  titleImg        String         
   originalTitle   String?
   grade           Decimal        
   playTime        String
@@ -63,8 +64,6 @@ model DirectedMovie {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }
-
-
 model Teaser {
   id              Int      @id @default(autoincrement())
   url             String 

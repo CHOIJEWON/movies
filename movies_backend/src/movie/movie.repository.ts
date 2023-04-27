@@ -4,12 +4,13 @@ import {
   associateMovieAndGenreDto,
   CreateMovieDto,
 } from 'src/commons/DTO/movie.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 export class MovieRepository {
   prisma = new PrismaClient();
 
-  async findMovieByTitle(title: string): Promise<Movie> {
-    return await this.prisma.movie.findFirst({
+  async findMovieByTitle(tx: PrismaService, title: string): Promise<Movie> {
+    return await tx.movie.findFirst({
       where: {
         title,
       },
@@ -17,12 +18,20 @@ export class MovieRepository {
   }
 
   async createMovie(createMovieDto: CreateMovieDto): Promise<Movie> {
-    const { title, originalTitle, grade, playTime, synopsis, releaseDate } =
-      createMovieDto;
+    const {
+      title,
+      titleImg,
+      originalTitle,
+      grade,
+      playTime,
+      synopsis,
+      releaseDate,
+    } = createMovieDto;
 
     return await this.prisma.movie.create({
       data: {
         title,
+        titleImg,
         originalTitle,
         grade,
         playTime,

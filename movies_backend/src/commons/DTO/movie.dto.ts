@@ -1,5 +1,5 @@
 import { PickType } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsUrl } from 'class-validator';
 
 export class CreateMovieDto {
   @IsNotEmpty({
@@ -8,6 +8,10 @@ export class CreateMovieDto {
     },
   })
   title: string;
+
+  @IsString()
+  @IsUrl()
+  titleImg: string;
 
   @IsString()
   originalTitle?: string;
@@ -34,10 +38,26 @@ export class CreateMovieDto {
 }
 
 export class CreateMovieWithAssocationTable extends CreateMovieDto {
-  genre: string;
+  @IsNotEmpty()
+  genres: string[];
+
+  @IsNotEmpty()
+  @IsString()
   directorName: string;
+  @IsUrl()
+  teasers: string[];
+
+  @IsNotEmpty()
+  actorDetails: CreateActorWithRoleName[];
 }
 
+export class CreateActorWithRoleName {
+  @IsNotEmpty()
+  name: string;
+
+  @IsNotEmpty()
+  roleName: string;
+}
 export class associateMovieAndGenreDto {
   movieId: number;
   genreId: number;

@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
-import { HttpExceptionFilter } from './commons/filters';
+import { ActorModule } from './actor/actor.module';
 import { validation } from './commons/utils';
 import { DirectorModule } from './director/director.module';
 import { GenreModule } from './genre/genre.module';
 import { MovieModule } from './movie/movie.module';
+import { PrismaModule } from './prisma/prisma.module';
 import { TestModule } from './test/test.module';
 
 @Module({
@@ -20,16 +20,12 @@ import { TestModule } from './test/test.module';
       isGlobal: true,
       validationSchema: validation,
     }),
+    PrismaModule,
+    ActorModule,
     TestModule,
     MovieModule,
     GenreModule,
     DirectorModule,
-  ],
-  providers: [
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
   ],
 })
 export class AppModule {}
