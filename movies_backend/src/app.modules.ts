@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './commons/filters';
 import { validation } from './commons/utils';
+import { DirectorModule } from './director/director.module';
 import { GenreModule } from './genre/genre.module';
 import { MovieModule } from './movie/movie.module';
 import { TestModule } from './test/test.module';
@@ -22,6 +23,7 @@ import { TestModule } from './test/test.module';
     TestModule,
     MovieModule,
     GenreModule,
+    DirectorModule,
   ],
   providers: [
     {

@@ -1,5 +1,6 @@
 import { Movie, MovieGenre, PrismaClient } from '@prisma/client';
 import {
+  AssociateMovieAndDirectorDto,
   associateMovieAndGenreDto,
   CreateMovieDto,
 } from 'src/commons/DTO/movie.dto';
@@ -40,6 +41,15 @@ export class MovieRepository {
         movieId,
         genreId,
       },
+    });
+  }
+
+  async associateMovieAndDirector({
+    movieId,
+    directorId,
+  }: AssociateMovieAndDirectorDto) {
+    return await this.prisma.directedMovie.create({
+      data: { movieId, directorId },
     });
   }
 }
