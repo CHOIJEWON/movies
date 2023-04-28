@@ -20,17 +20,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     const response: any = (exception as HttpException).getResponse();
-    const status = (exception as HttpException).getStatus();
 
     const log = {
-      status,
       timestamp: new Date(),
       url: req.url,
-      response: response?.['message'] ? response?.['message'] : response,
+      response,
     };
 
     Logger.log(log);
 
-    res.status(status).json(log);
+    res.status((exception as HttpException).getStatus()).json(response);
   }
 }
