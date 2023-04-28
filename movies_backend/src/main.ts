@@ -1,6 +1,7 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { json } from 'body-parser';
 import { AppModule } from './app.modules';
 import { HttpExceptionFilter } from './commons/filters';
 import { setupSwagger } from './commons/utils';
@@ -11,7 +12,16 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const PORT = configService.get('SERVER_PORT');
 
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
   setupSwagger(app);
+  app.use(json({ limit: '10mb' }));
   app.enableCors();
   app.useGlobalFilters(new HttpExceptionFilter());
 
