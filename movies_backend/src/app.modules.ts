@@ -6,6 +6,7 @@ import { DirectorModule } from './director/director.module';
 import { GenreModule } from './genre/genre.module';
 import { MovieModule } from './movie/movie.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { TeaserModule } from './teaser/teaser.module';
 import { TestModule } from './test/test.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { TestModule } from './test/test.module';
       validationSchema: validation,
     }),
     PrismaModule,
+    TeaserModule,
     ActorModule,
     TestModule,
     MovieModule,

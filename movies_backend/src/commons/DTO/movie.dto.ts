@@ -1,5 +1,6 @@
 import { PickType } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString, IsUrl } from 'class-validator';
+import { CreateActorDto, CreateActorWithRoleName } from './actor.dto';
 
 export class CreateMovieDto {
   @IsNotEmpty({
@@ -51,13 +52,6 @@ export class CreateMovieWithAssocationTable extends CreateMovieDto {
   actorDetails: CreateActorWithRoleName[];
 }
 
-export class CreateActorWithRoleName {
-  @IsNotEmpty()
-  name: string;
-
-  @IsNotEmpty()
-  roleName: string;
-}
 export class associateMovieAndGenreDto {
   movieId: number;
   genreId: number;
@@ -68,4 +62,11 @@ export class AssociateMovieAndDirectorDto extends PickType(
   ['movieId' as const],
 ) {
   directorId: number;
+}
+
+export class CreateMovieWithAssocationInRepositoryDto extends CreateMovieDto {
+  directorId: number;
+  genresIds: number[];
+  movieCasts: CreateActorDto[];
+  teasers: string[];
 }

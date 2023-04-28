@@ -1,10 +1,11 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Movie, Prisma, Teaser } from '@prisma/client';
+import { Movie, Prisma } from '@prisma/client';
 import { ActorService } from 'src/actor/actor.service';
 import { CreateMovieWithAssocationTable } from 'src/commons/DTO/movie.dto';
 import { DirectorRepository } from 'src/director/direcotr.repository';
 import { GenreService } from 'src/genre/genre.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { TeaserService } from 'src/teaser/teaser.service';
 import { MovieRepository } from './movie.repository';
 
 @Injectable()
@@ -15,6 +16,7 @@ export class MovieService {
     private readonly actorService: ActorService,
     private readonly prismaService: PrismaService,
     private readonly directorRepository: DirectorRepository,
+    private readonly teaserService: TeaserService,
   ) {}
 
   async createMovieWithAssociated(
@@ -25,15 +27,7 @@ export class MovieService {
     const { directorName, genres, actorDetails, teasers, ...createMovie } =
       createMovieWithGenre;
 
-    const {
-      title,
-      titleImg,
-      originalTitle,
-      grade,
-      synopsis,
-      playTime,
-      releaseDate,
-    }: Prisma.MovieCreateInput = createMovie;
+    const { title }: Prisma.MovieCreateInput = createMovie;
 
     try {
       await this.prismaService.$transaction(async (tx: PrismaService) => {
@@ -43,7 +37,7 @@ export class MovieService {
 
         // movie already exists exception
         if (existingMovie)
-          throw new HttpException('this movie already exists', 409);
+          throw new HttpException('THIS_MOVIE_ALREADY_EXISTS', 409);
 
         const genresIds = await this.genreService.getExistingAndCreateGenes(
           tx,
@@ -54,64 +48,59 @@ export class MovieService {
         const existingDirectorOrCreate =
           await this.directorRepository.upsertDirector(tx, directorName);
 
-        const movieCast = await this.actorService.getExistingAndCreateActor(
+        if (!existingDirectorOrCreate)
+          throw new HttpException(
+            'CAUSE_AN_ERROR_WHILE_CONTECT_DIRECTOR_ENTITY',
+            500,
+          );
+
+        const { id: directorId } = existingDirectorOrCreate;
+
+        const movieCasts = await this.actorService.getExistingAndCreateActor(
           tx,
           actorDetails,
         );
 
-        const existingTeasers: Teaser[] = await tx.teaser.findMany({
-          where: {
-            url: {
-              in: teasers,
-            },
-          },
-        });
+        if (!movieCasts)
+          throw new HttpException(
+            'CAUSE_AN_ERROR_WHILE_CONECT_ACTOR_ENTITY',
+            500,
+          );
 
-        const newTeasers: string[] = teasers.filter(
-          (url) => !existingTeasers.some((t) => t.url === url),
-        );
+        const newTeasers = await this.teaserService.createTeaser(tx, teasers);
+
+        if (!newTeasers)
+          throw new HttpException('CREATE_TEASER_ERROR_WHILE_CONTECT_', 500);
 
         // create movie with connection another table
-        const createMovieWithAssociated = await tx.movie.create({
-          data: {
-            title,
-            titleImg,
-            originalTitle,
-            grade,
-            synopsis,
-            playTime,
-            releaseDate,
-            directorMovie: {
-              create: [
-                {
-                  directorId: existingDirectorOrCreate.id,
-                },
-              ],
-            },
-            Genre: {
-              create: genresIds.map((genreId) => ({
-                genreId,
-              })),
-            },
-            movieCast: {
-              create: movieCast.map((cast) => ({
-                roleName: cast.roleName,
-                actor: cast.actor,
-              })),
-            },
-            Teaser: {
-              create: newTeasers.map((url) => ({
-                url,
-              })),
-            },
-          },
-        });
+        const createMovieWithAssociated =
+          await this.movieRepository.createMovieWithT(tx, {
+            ...createMovie,
+            directorId,
+            genresIds,
+            movieCasts,
+            teasers: newTeasers,
+          });
+
+        if (!createMovieWithAssociated)
+          throw new Error(
+            'CAUSE_AN_ERROR_WHILE_CREATE_MOVIE_AND_CONNECT_TABLES',
+          );
 
         response = createMovieWithAssociated;
       });
       return response;
     } catch (e) {
-      throw new HttpException(e.message, 500);
+      const errorStatusMap = {
+        THIS_MOVIE_ALREADY_EXISTS: 409,
+        CAUSE_AN_ERROR_WHILE_CONTECT_DIRECTOR_ENTITY: 500,
+        CREATE_ACTOR_ERROR_WHILE_CONTECT_MOVIE_ENTITY: 500,
+        CAUSE_AN_ERROR_WHILE_CREATE_MOVIE_AND_CONNECT_TABLES: 500,
+      };
+
+      const statusCode = errorStatusMap[e.message] || 500;
+
+      throw new HttpException(e.message, statusCode);
     } finally {
       await this.prismaService.$disconnect();
     }
