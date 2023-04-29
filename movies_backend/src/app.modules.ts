@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_PIPE } from '@nestjs/core';
 import { ActorModule } from './actor/actor.module';
 import { validation } from './commons/utils';
 import { DirectorModule } from './director/director.module';
@@ -28,6 +29,12 @@ import { TestModule } from './test/test.module';
     MovieModule,
     GenreModule,
     DirectorModule,
+  ],
+  providers: [
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
   ],
 })
 export class AppModule {}
