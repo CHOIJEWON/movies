@@ -11,11 +11,11 @@ export class CreateActorDto {
 export class CreateActorWithRoleName {
   @IsNotEmpty()
   @IsString()
-  @Transform(({ value }) => value.toUpperCase().replace(/[\s_-]+/g, ''))
+  @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
   name: string;
 
   @IsNotEmpty()
   @IsString()
-  @Transform(({ value }) => value.toUpperCase().replace(/[\s_-]+/g, ''))
+  @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
   roleName: string;
 }
