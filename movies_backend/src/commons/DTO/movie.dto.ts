@@ -1,6 +1,5 @@
 import { PickType } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString, IsUrl } from 'class-validator';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateActorDto, CreateActorWithRoleName } from './actor.dto';
 
 export class CreateMovieDto {
@@ -9,7 +8,6 @@ export class CreateMovieDto {
       code: 'TITLE_OF_THE_MOVIE_MUST_EXIST',
     },
   })
-  @IsString()
   title: string;
 
   @IsString()
@@ -27,7 +25,6 @@ export class CreateMovieDto {
       code: 'PLAY_TIME_OF_MOVIE_MUST_EXIST',
     },
   })
-  @IsString()
   playTime: string;
 
   @IsNotEmpty({
@@ -35,12 +32,12 @@ export class CreateMovieDto {
       code: 'SYNOPSIS_OF_MOVIE_MUST_EXIST',
     },
   })
-  @IsString()
   synopsis: string;
 
   @IsNumber()
   releaseDate: number;
 }
+
 export class CreateMovieWithAssocationTable extends CreateMovieDto {
   @IsNotEmpty()
   genres: string[];
@@ -48,21 +45,13 @@ export class CreateMovieWithAssocationTable extends CreateMovieDto {
   @IsNotEmpty()
   @IsString()
   directorName: string;
-
+  @IsUrl()
   teasers: string[];
 
   @IsNotEmpty()
   actorDetails: CreateActorWithRoleName[];
 }
 
-export class FindMovieByTitleDto {
-  @IsNotEmpty()
-  tx: PrismaService;
-
-  @IsNotEmpty()
-  @IsString()
-  title: string;
-}
 export class associateMovieAndGenreDto {
   movieId: number;
   genreId: number;
