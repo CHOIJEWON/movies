@@ -1,8 +1,7 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.modules';
-import { HttpExceptionFilter } from './commons/filters';
 import { setupSwagger } from './commons/utils';
 
 async function bootstrap() {
@@ -13,7 +12,11 @@ async function bootstrap() {
 
   setupSwagger(app);
   app.enableCors();
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+    }),
+  );
 
   await app.listen(PORT);
 
