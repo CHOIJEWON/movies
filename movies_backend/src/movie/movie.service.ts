@@ -20,12 +20,12 @@ export class MovieService {
   ) {}
 
   async createMovieWithAssociated(
-    createMovieWithGenre: CreateMovieWithAssocationTable,
+    createMovieWithAssocationTable: CreateMovieWithAssocationTable,
   ): Promise<Movie> {
     let response;
 
     const { directorName, genres, actorDetails, teasers, ...createMovie } =
-      createMovieWithGenre;
+      createMovieWithAssocationTable;
 
     const { title }: Prisma.MovieCreateInput = createMovie;
 

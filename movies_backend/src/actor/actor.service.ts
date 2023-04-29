@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import {
-  CreateActorDto,
-  CreateActorWithRoleName,
-} from 'src/commons/DTO/actor.dto';
+import { CreateActorWithRoleName } from 'src/commons/DTO/actor.dto';
+import { createActorInterface } from 'src/commons/interface/actor.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ActorRepository } from './actor.repository';
 
@@ -13,7 +11,7 @@ export class ActorService {
   async getExistingAndCreateActor(
     tx: PrismaService,
     actorDetails: CreateActorWithRoleName[],
-  ): Promise<CreateActorDto[]> {
+  ): Promise<createActorInterface[]> {
     const movieCast = [];
     for (let i = 0; i < actorDetails.length; i++) {
       const actorDetail = actorDetails[i];

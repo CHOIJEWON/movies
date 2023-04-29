@@ -1,13 +1,21 @@
-import { PickType } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString, IsUrl } from 'class-validator';
+import { IntersectionType, PickType } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
+import {
+  ArrayUnique,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsUrl,
+  Validate,
+} from 'class-validator';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { TeasersArrayValidator } from '../validator.custom';
 import { CreateActorDto, CreateActorWithRoleName } from './actor.dto';
 
 export class CreateMovieDto {
-  @IsNotEmpty({
-    context: {
-      code: 'TITLE_OF_THE_MOVIE_MUST_EXIST',
-    },
-  })
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => value.toUpperCase().replace(/[\s_-]+/g, ''))
   title: string;
 
   @IsString()
@@ -15,6 +23,7 @@ export class CreateMovieDto {
   titleImg: string;
 
   @IsString()
+  @Transform(({ value }) => value.toUpperCase().replace(/[\s_-]+/g, ''))
   originalTitle?: string;
 
   @IsNumber()
@@ -38,20 +47,38 @@ export class CreateMovieDto {
   releaseDate: number;
 }
 
-export class CreateMovieWithAssocationTable extends CreateMovieDto {
+export class CreateMovieAssocationTable extends CreateMovieDto {
   @IsNotEmpty()
   genres: string[];
 
   @IsNotEmpty()
   @IsString()
+  @Transform(({ value }) => value.toUpperCase().replace(/[\s_-]+/g, ''))
   directorName: string;
-  @IsUrl()
+
+  @IsString({ each: true })
+  @ArrayUnique()
   teasers: string[];
 
   @IsNotEmpty()
+  @Type(() => CreateActorWithRoleName)
   actorDetails: CreateActorWithRoleName[];
 }
 
+export class CreateMovieWithAssocationTable extends IntersectionType(
+  CreateMovieDto,
+  CreateMovieAssocationTable,
+) {}
+
+export class FindMovieByTitleDto {
+  @IsNotEmpty()
+  tx: PrismaService;
+
+  @IsNotEmpty()
+  @IsString()
+  @Validate(TeasersArrayValidator)
+  title: string;
+}
 export class associateMovieAndGenreDto {
   movieId: number;
   genreId: number;
