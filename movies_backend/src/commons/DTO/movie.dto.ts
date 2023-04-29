@@ -2,6 +2,7 @@ import { IntersectionType, PickType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayUnique,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -12,10 +13,21 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { TeasersArrayValidator } from '../validator.custom';
 import { CreateActorDto, CreateActorWithRoleName } from './actor.dto';
 
+enum GenreEnum {
+  Action = 'ACTION',
+  Comedy = 'COMEDY',
+  Drama = 'DRAMA',
+  Horror = 'HORROR',
+  Thriller = 'THRILLER',
+  SF = 'SF',
+  Fantasy = 'FANTASY',
+  Animation = 'ANIMATION',
+  Document = 'DOCUMENT',
+}
 export class CreateMovieDto {
   @IsNotEmpty()
   @IsString()
-  @Transform(({ value }) => value.toUpperCase().replace(/[\s_-]+/g, ''))
+  @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
   title: string;
 
   @IsString()
@@ -23,7 +35,7 @@ export class CreateMovieDto {
   titleImg: string;
 
   @IsString()
-  @Transform(({ value }) => value.toUpperCase().replace(/[\s_-]+/g, ''))
+  @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
   originalTitle?: string;
 
   @IsNumber()
@@ -49,11 +61,12 @@ export class CreateMovieDto {
 
 export class CreateMovieAssocationTable extends CreateMovieDto {
   @IsNotEmpty()
+  @IsEnum(GenreEnum, { each: true })
   genres: string[];
 
   @IsNotEmpty()
   @IsString()
-  @Transform(({ value }) => value.toUpperCase().replace(/[\s_-]+/g, ''))
+  @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
   directorName: string;
 
   @IsString({ each: true })
