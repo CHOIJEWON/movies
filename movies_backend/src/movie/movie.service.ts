@@ -1,8 +1,22 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Movie, Prisma } from '@prisma/client';
+import { ActorRepository } from 'src/actor/actor.repository';
 import { ActorService } from 'src/actor/actor.service';
-import { CreateMovieWithAssocationTable } from 'src/commons/DTO/movie.dto';
+import {
+  CreateMovieWithAssocationTable,
+  FindMovieByDirectorNameDto,
+  GetMovieByTitle,
+  GetMoviesByGenresWith,
+  GetMoviesByOrderByOption,
+} from 'src/commons/DTO/movie.dto';
+import { MovieWithGenreAndAssocaitedTable } from 'src/commons/interface/genre.interface';
+import {
+  GetOneMovieFormatted,
+  GetOneMovieWithAssociation,
+  MovieWithDirectorAndAssocationTableProcessFormats,
+} from 'src/commons/interface/movie.interface';
 import { DirectorRepository } from 'src/director/direcotr.repository';
+import { GenreRepository } from 'src/genre/genre.repository';
 import { GenreService } from 'src/genre/genre.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TeaserService } from 'src/teaser/teaser.service';
@@ -13,7 +27,9 @@ export class MovieService {
   constructor(
     private readonly movieRepository: MovieRepository,
     private readonly genreService: GenreService,
+    private readonly genreRpository: GenreRepository,
     private readonly actorService: ActorService,
+    private readonly actorRepository: ActorRepository,
     private readonly prismaService: PrismaService,
     private readonly directorRepository: DirectorRepository,
     private readonly teaserService: TeaserService,
@@ -33,7 +49,7 @@ export class MovieService {
       await this.prismaService.$transaction(async (tx: PrismaService) => {
         // Determine if the movie already exists
         const existingMovie: Movie =
-          await this.movieRepository.findMovieByTitle(tx, title);
+          await this.movieRepository.findMovieByTitleWithT(tx, title);
 
         // movie already exists exception
         if (existingMovie)
@@ -104,5 +120,244 @@ export class MovieService {
     } finally {
       await this.prismaService.$disconnect();
     }
+  }
+
+  async getAllMovies({
+    sortType,
+  }: GetMoviesByOrderByOption): Promise<GetOneMovieWithAssociation[]> {
+    try {
+      const allMovies = await this.movieRepository.getAllMovies(sortType);
+
+      if (!allMovies) return [];
+
+      const formatted = this.formattedGetAllMoives(allMovies);
+
+      return formatted;
+    } catch (e) {
+      throw new HttpException(e.message, 500);
+    }
+  }
+
+  async getMovieByDirectorName({
+    directorName,
+  }: FindMovieByDirectorNameDto): Promise<
+    MovieWithDirectorAndAssocationTableProcessFormats[]
+  > {
+    try {
+      const existingDirector =
+        await this.directorRepository.getDirectorInfoByNameWithAssociateTable(
+          directorName,
+        );
+
+      if (!existingDirector)
+        throw new Error('THERE_IS_NO_DIRECTOR_WITH_THAT_NAME');
+
+      const { directedMovie: directedMovies, directorName: productDriector } =
+        existingDirector;
+
+      if (directedMovies.length === 0) return [];
+
+      const formattedMovies = directedMovies.map((directedMovie) => {
+        const { movie } = directedMovie;
+        const {
+          id,
+          title,
+          titleImg,
+          originalTitle,
+          grade,
+          playTime,
+          synopsis,
+          releaseDate,
+          createdAt,
+          updatedAt,
+          Genre: Genres,
+          movieCast: movieCasts,
+          Teaser: Teasers,
+        } = movie;
+
+        return {
+          id,
+          title,
+          titleImg,
+          originalTitle,
+          productDriector,
+          grade,
+          playTime,
+          synopsis,
+          releaseDate,
+          createdAt,
+          updatedAt,
+          Genre: Genres.map((genre) => genre.genre.genre),
+          movieCast: movieCasts.map((cast) => ({
+            roleName: cast.roleName,
+            actor: cast.actor.name,
+          })),
+          Teaser: Teasers.map((teaser) => teaser.url),
+        };
+      });
+
+      return formattedMovies;
+    } catch (e) {
+      if ((e.message = 'THERE_IS_NO_DIRECTOR_WITH_THAT_NAME')) {
+        throw new HttpException(e.message, 404);
+      }
+      throw new HttpException(e.message, 500);
+    }
+  }
+
+  async getMovieByGenre(
+    { genre }: GetMoviesByGenresWith,
+    { sortType }: GetMoviesByOrderByOption,
+  ): Promise<MovieWithGenreAndAssocaitedTable[]> {
+    try {
+      const existingMovieOnGenre = await this.genreRpository.getMoviesByGenre(
+        genre,
+        sortType,
+      );
+
+      if (!existingMovieOnGenre) return [];
+
+      const { movieGenre: moviesGenre, genre: outPutGenre } =
+        existingMovieOnGenre;
+
+      const formattedMovies = moviesGenre.map((genreMovie) => {
+        const { movie } = genreMovie;
+        const {
+          id,
+          title,
+          titleImg,
+          originalTitle,
+          grade,
+          playTime,
+          synopsis,
+          releaseDate,
+          createdAt,
+          updatedAt,
+          directorMovie,
+          movieCast: movieCasts,
+          Teaser: Teasers,
+        } = movie;
+
+        return {
+          id,
+          title,
+          titleImg,
+          originalTitle,
+          productDriector: directorMovie.map(
+            (movie) => movie.director.directorName,
+          ),
+          grade,
+          playTime,
+          synopsis,
+          releaseDate,
+          createdAt,
+          updatedAt,
+          genre: outPutGenre,
+          movieCast: movieCasts.map((cast) => ({
+            roleName: cast.roleName,
+            actor: cast.actor.name,
+          })),
+          Teaser: Teasers.map((teaser) => teaser.url),
+        };
+      });
+
+      return formattedMovies;
+    } catch (e) {
+      throw new HttpException(e.message, 500);
+    }
+  }
+
+  async getMovieById(movieId: number): Promise<GetOneMovieFormatted> {
+    try {
+      const existingMovie = await this.movieRepository.findMovieById(movieId);
+
+      if (!existingMovie) throw new Error('THERE_IS_NO_MOVIE_WITH_THAT_ID');
+
+      const formattedMovie = this.formattedGetOneMovie(existingMovie);
+
+      return formattedMovie;
+    } catch (e) {
+      if ((e.message = 'THERE_IS_NO_MOVIE_WITH_THAT_ID'))
+        throw new HttpException('THERE_IS_NO_MOVIE_WITH_THAT_ID', 404);
+      throw new HttpException(e.message, 500);
+    }
+  }
+
+  async getMovieByTitle({
+    title,
+  }: GetMovieByTitle): Promise<GetOneMovieFormatted> {
+    try {
+      const existingMovie = await this.movieRepository.findMovieByTitle(title);
+
+      if (!existingMovie) throw new Error('THERE_IS_NO_MOVIE_WITH_THAT_TITLE');
+
+      const formattedMovie = this.formattedGetOneMovie(existingMovie);
+
+      return formattedMovie;
+    } catch (e) {
+      if ((e.message = 'THERE_IS_NO_MOVIE_WITH_THAT_TITLE'))
+        throw new HttpException(e.message, 404);
+      throw new HttpException(e.message, 500);
+    }
+  }
+
+  formattedGetOneMovie(existingMovie) {
+    const {
+      directorMovie,
+      Genre,
+      movieCast: movieCasts,
+      ...movieInfo
+    } = existingMovie;
+
+    return {
+      id: movieInfo.id,
+      title: movieInfo.title,
+      titleImg: movieInfo.titleImg,
+      originalTitle: movieInfo.originalTitle,
+      grade: movieInfo.grade,
+      playTime: movieInfo.playTime,
+      synopsis: movieInfo.synopsis,
+      releaseDate: movieInfo.releaseDate,
+      createdAt: movieInfo.createdAt,
+      updatedAt: movieInfo.updatedAt,
+      director: directorMovie.map((d) => d.director.directorName),
+      Genre: Genre.map((g) => g.genre.genre),
+      movieCast: movieCasts.map((cast) => ({
+        roleName: cast.roleName,
+        actor: cast.actor.name,
+      })),
+    };
+  }
+
+  formattedGetAllMoives(existingMovie) {
+    const formattedExistingMovies = existingMovie.map((test) => {
+      const {
+        directorMovie,
+        Genre,
+        movieCast: movieCasts,
+        ...movieInfo
+      } = test;
+
+      return {
+        id: movieInfo.id,
+        title: movieInfo.title,
+        titleImg: movieInfo.titleImg,
+        originalTitle: movieInfo.originalTitle,
+        grade: movieInfo.grade,
+        playTime: movieInfo.playTime,
+        synopsis: movieInfo.synopsis,
+        releaseDate: movieInfo.releaseDate,
+        createdAt: movieInfo.createdAt,
+        updatedAt: movieInfo.updatedAt,
+        director: directorMovie.map((d) => d.director.directorName),
+        Genre: Genre.map((g) => g.genre.genre),
+        movieCast: movieCasts.map((cast) => ({
+          roleName: cast.roleName,
+          actor: cast.actor.name,
+        })),
+      };
+    });
+
+    return formattedExistingMovies;
   }
 }
