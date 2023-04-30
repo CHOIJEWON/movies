@@ -1,65 +1,20 @@
-import { Movie, MovieGenre, PrismaClient } from '@prisma/client';
-import {
-  AssociateMovieAndDirectorDto,
-  associateMovieAndGenreDto,
-  CreateMovieDto,
-  CreateMovieWithAssocationInRepositoryDto,
-} from 'src/commons/DTO/movie.dto';
+import { Movie, Prisma, PrismaClient } from '@prisma/client';
+import { CreateMovieWithAssocationInRepositoryDto } from 'src/commons/DTO/movie.dto';
+import { GetOneMovieWithAssociation } from 'src/commons/interface/movie.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { movieSelectQuery } from './movie.select.query';
 
 export class MovieRepository {
   prisma = new PrismaClient();
 
-  async findMovieByTitle(tx: PrismaService, title: string): Promise<Movie> {
+  async findMovieByTitleWithT(
+    tx: PrismaService,
+    title: string,
+  ): Promise<Movie> {
     return await tx.movie.findFirst({
       where: {
         title,
       },
-    });
-  }
-
-  async createMovie(createMovieDto: CreateMovieDto): Promise<Movie> {
-    const {
-      title,
-      titleImg,
-      originalTitle,
-      grade,
-      playTime,
-      synopsis,
-      releaseDate,
-    } = createMovieDto;
-
-    return await this.prisma.movie.create({
-      data: {
-        title,
-        titleImg,
-        originalTitle,
-        grade,
-        playTime,
-        synopsis,
-        releaseDate,
-      },
-    });
-  }
-
-  async associateMovieAndGenre({
-    movieId,
-    genreId,
-  }: associateMovieAndGenreDto): Promise<MovieGenre> {
-    return await this.prisma.movieGenre.create({
-      data: {
-        movieId,
-        genreId,
-      },
-    });
-  }
-
-  async associateMovieAndDirector({
-    movieId,
-    directorId,
-  }: AssociateMovieAndDirectorDto) {
-    return await this.prisma.directedMovie.create({
-      data: { movieId, directorId },
     });
   }
 
@@ -77,7 +32,7 @@ export class MovieRepository {
       synopsis,
       playTime,
       releaseDate,
-    } = createMovieWithAssocationInRepositoryDto;
+    } = createMovie;
     return await tx.movie.create({
       data: {
         title,
@@ -109,6 +64,32 @@ export class MovieRepository {
           create: teasers.map((url) => ({ url })),
         },
       },
+    });
+  }
+
+  async getAllMovies(sortType: string): Promise<GetOneMovieWithAssociation[]> {
+    const orderByClause =
+      sortType === 'GRADE_DESC'
+        ? { grade: Prisma.SortOrder.desc }
+        : { createdAt: Prisma.SortOrder.desc };
+
+    return await this.prisma.movie.findMany({
+      select: movieSelectQuery,
+      orderBy: orderByClause,
+    });
+  }
+
+  async findMovieByTitle(title: string): Promise<GetOneMovieWithAssociation> {
+    return await this.prisma.movie.findFirst({
+      where: { title },
+      select: movieSelectQuery,
+    });
+  }
+
+  async findMovieById(movieId: number): Promise<GetOneMovieWithAssociation> {
+    return await this.prisma.movie.findFirst({
+      where: { id: movieId },
+      select: movieSelectQuery,
     });
   }
 }

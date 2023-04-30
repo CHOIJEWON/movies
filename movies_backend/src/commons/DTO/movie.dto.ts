@@ -1,4 +1,4 @@
-import { IntersectionType, PickType } from '@nestjs/swagger';
+import { IntersectionType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayUnique,
@@ -23,6 +23,11 @@ enum GenreEnum {
   Fantasy = 'FANTASY',
   Animation = 'ANIMATION',
   Document = 'DOCUMENT',
+}
+
+enum SortOption {
+  GRADE = 'GRADE_DESC',
+  UPDATE = 'UPDATE_DESC',
 }
 export class CreateMovieDto {
   @IsNotEmpty()
@@ -82,6 +87,27 @@ export class CreateMovieWithAssocationTable extends IntersectionType(
   CreateMovieDto,
   CreateMovieAssocationTable,
 ) {}
+export class GetMoviesByGenresWith {
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => value.toUpperCase())
+  @IsEnum(GenreEnum)
+  genre: string;
+}
+
+export class GetMoviesByOrderByOption {
+  @IsNotEmpty()
+  @IsString()
+  @IsEnum(SortOption)
+  sortType: string;
+}
+
+export class GetMovieByTitle {
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
+  title: string;
+}
 
 export class FindMovieByTitleDto {
   @IsNotEmpty()
@@ -92,21 +118,17 @@ export class FindMovieByTitleDto {
   @Validate(TeasersArrayValidator)
   title: string;
 }
-export class associateMovieAndGenreDto {
-  movieId: number;
-  genreId: number;
-}
-
-export class AssociateMovieAndDirectorDto extends PickType(
-  associateMovieAndGenreDto,
-  ['movieId' as const],
-) {
-  directorId: number;
-}
 
 export class CreateMovieWithAssocationInRepositoryDto extends CreateMovieDto {
   directorId: number;
   genresIds: number[];
   movieCasts: CreateActorDto[];
   teasers: string[];
+}
+
+export class FindMovieByDirectorNameDto {
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
+  directorName: string;
 }

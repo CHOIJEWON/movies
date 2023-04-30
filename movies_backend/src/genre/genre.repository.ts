@@ -1,15 +1,11 @@
-import { Genre, PrismaClient } from '@prisma/client';
+import { Genre, Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 export class GenreRepository {
   prisma = new PrismaClient();
 
-  async createGenre(genre: string): Promise<Genre> {
-    return await this.prisma.genre.create({
-      data: {
-        genre,
-      },
-    });
+  async createGenreWithT(tx: PrismaService, genre: string): Promise<Genre> {
+    return await tx.genre.create({ data: { genre } });
   }
 
   async findMaynGenresByNamesWithT(
@@ -21,7 +17,58 @@ export class GenreRepository {
     });
   }
 
-  async createGenreWithT(tx: PrismaService, genre: string): Promise<Genre> {
-    return await tx.genre.create({ data: { genre } });
+  async getMoviesByGenre(genre: string, sortType: string) {
+    const orderByClause =
+      sortType === 'GRADE_DESC'
+        ? { grade: Prisma.SortOrder.asc }
+        : { createdAt: Prisma.SortOrder.desc };
+
+    return await this.prisma.genre.findFirst({
+      where: { genre },
+      select: {
+        genre: true,
+        movieGenre: {
+          orderBy: { movie: orderByClause },
+          select: {
+            movie: {
+              select: {
+                id: true,
+                title: true,
+                titleImg: true,
+                originalTitle: true,
+                grade: true,
+                playTime: true,
+                synopsis: true,
+                releaseDate: true,
+                createdAt: true,
+                updatedAt: true,
+                directorMovie: {
+                  select: {
+                    director: {
+                      select: {
+                        directorName: true,
+                      },
+                    },
+                  },
+                },
+                movieCast: {
+                  select: {
+                    roleName: true,
+                    actor: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                  },
+                },
+                Teaser: {
+                  select: { url: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   }
 }
