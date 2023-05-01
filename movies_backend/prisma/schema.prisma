@@ -39,7 +39,7 @@ model Genre {
 }
 model MovieGenre {
   id              Int           @id @default(autoincrement())
-  movie           Movie         @relation(fields: [movieId], references: [id])
+  movie           Movie         @relation(fields: [movieId], references: [id], onDelete: Cascade)
   movieId         Int
   genre           Genre         @relation(fields: [genreId], references: [id])
   genreId         Int   
@@ -57,7 +57,7 @@ model Director {
 
 model DirectedMovie {
   id              Int           @id @default(autoincrement())
-  movie           Movie         @relation(fields: [movieId], references: [id])
+  movie           Movie         @relation(fields: [movieId], references: [id], onDelete: Cascade)
   movieId         Int
   director        Director      @relation(fields: [directorId], references: [id])
   directorId      Int
@@ -67,7 +67,7 @@ model DirectedMovie {
 model Teaser {
   id              Int      @id @default(autoincrement())
   url             String 
-  movie           Movie    @relation(fields: [movieId], references: [id])
+  movie           Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
   movieId         Int
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt

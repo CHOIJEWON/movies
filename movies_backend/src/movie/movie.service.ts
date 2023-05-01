@@ -442,7 +442,7 @@ export class MovieService {
       const updateRoleName = await this.prismaService.$transaction(
         async (tx: PrismaService) => {
           const existingMovieCast =
-            await this.movieRepository.getMovieCastByIdsWith(tx, {
+            await this.movieRepository.getMovieCastByIdsWithT(tx, {
               actorId,
               movieId,
             });
@@ -493,7 +493,7 @@ export class MovieService {
         async (tx: PrismaService) => {
           // 해당 영화에 출연진이 있는지 조사
           const existingMovieCast =
-            await this.movieRepository.getMovieCastByIdsWith(tx, {
+            await this.movieRepository.getMovieCastByIdsWithT(tx, {
               movieId,
               actorId,
             });
@@ -631,6 +631,172 @@ export class MovieService {
         NO_MOVIE_CAST_HAS_TAHT_ID: 404,
         NO_CHANGE_IN_GENRE: 304,
         CAUSE_AN_ERROR_WHILE_UPDATE_MOVIE_GENRE: 500,
+      };
+
+      const statusCode = errorStatusMap[e.message] || 500;
+
+      throw new HttpException(e.message, statusCode);
+    }
+  }
+
+  async deleteMovie(movieId: number) {
+    try {
+      const deletedMovie = await this.prismaService.$transaction(
+        async (tx: PrismaService) => {
+          const existingMovie = await this.movieRepository.getMovieByIdWithT(
+            tx,
+            movieId,
+          );
+
+          if (!existingMovie) throw new Error('NO_MOVIE_HAS_TAHT_ID');
+
+          const deleteMovie = await this.movieRepository.deleteMovieByIdWithT(
+            tx,
+            existingMovie.id,
+          );
+
+          if (!deleteMovie)
+            throw new Error(
+              'CAUSE_AN_ERROR_WHILE_DELETE_MOVIE_WITH_ASSOCATED_TABLE',
+            );
+
+          return deleteMovie;
+        },
+      );
+      return deletedMovie;
+    } catch (e) {
+      const errorStatusMap = {
+        NO_MOVIE_HAS_TAHT_ID: 404,
+        CAUSE_AN_ERROR_WHILE_DELETE_MOVIE_WITH_ASSOCATED_TABLE: 500,
+      };
+
+      const statusCode = errorStatusMap[e.message] || 500;
+
+      throw new HttpException(e.message, statusCode);
+    }
+  }
+
+  async deleteMovieCast({ movieId, actorId }): Promise<MovieCast> {
+    try {
+      const deleteMovieCast = await this.prismaService.$transaction(
+        async (tx: PrismaService) => {
+          const existingMovieCast =
+            await this.movieRepository.getMovieCastByIdsWithT(tx, {
+              movieId,
+              actorId,
+            });
+
+          if (!existingMovieCast) throw new Error('NO_MOVIE_CAST_HAS_TAHT_ID');
+
+          const { id: movieCastId } = existingMovieCast;
+
+          const deleteMovieCast =
+            await this.movieRepository.deleteMovieCastById(tx, movieCastId);
+
+          if (!deleteMovieCast)
+            throw new Error('CAUSE_AN_ERROR_WHILE_DELETE_MOVIE_CAST');
+
+          return deleteMovieCast;
+        },
+      );
+
+      return deleteMovieCast;
+    } catch (e) {
+      const errorStatusMap = {
+        NO_MOVIE_CAST_HAS_TAHT_ID: 404,
+        CAUSE_AN_ERROR_WHILE_DELETE_MOVIE_CAST: 500,
+      };
+
+      const statusCode = errorStatusMap[e.message] || 500;
+
+      throw new HttpException(e.message, statusCode);
+    }
+  }
+
+  async deleteDirectedMovie({ movieId, directorId }): Promise<DirectedMovie> {
+    try {
+      const deleteDirecetdMovie = await this.prismaService.$transaction(
+        async (tx: PrismaService) => {
+          const existingDirectedMovie =
+            await this.movieRepository.getDirectedMovieByIdsWithT(tx, {
+              movieId,
+              directorId,
+            });
+
+          if (!existingDirectedMovie)
+            throw new Error('NO_DIRECTED_MOVIE_HAS_TAHT_ID');
+
+          const { id: directedMovieId } = existingDirectedMovie;
+
+          const deleteDirectedMovie =
+            await this.movieRepository.deleteDirectedMovieById(
+              tx,
+              directedMovieId,
+            );
+
+          if (!deleteDirectedMovie)
+            throw new Error('CAUSE_AN_ERROR_WHILE_DELETE_MOVIE_CAST');
+
+          return deleteDirectedMovie;
+        },
+      );
+
+      return deleteDirecetdMovie;
+    } catch (e) {
+      const errorStatusMap = {
+        NO_DIRECTED_MOVIE_HAS_TAHT_ID: 404,
+        CAUSE_AN_ERROR_WHILE_DELETE_MOVIE_CAST: 500,
+      };
+
+      const statusCode = errorStatusMap[e.message] || 500;
+
+      throw new HttpException(e.message, statusCode);
+    }
+  }
+
+  async deleteMovieGenre({ movieId, genreId }): Promise<MovieGenre> {
+    try {
+      const deleteMovieGenre = await this.prismaService.$transaction(
+        async (tx: PrismaService) => {
+          const existingMovie = await this.movieRepository.getMovieByIdWithT(
+            tx,
+            movieId,
+          );
+
+          if (!existingMovie) throw new Error('NO_MOVIE_HAS_TAHT_ID');
+
+          const existingMovieGenre = await this.movieRepository.getMovieGenre(
+            tx,
+            {
+              movieId,
+              genreId,
+            },
+          );
+
+          if (!existingMovieGenre)
+            throw new Error('NO_MOVIE_GENRE_HAS_TAHT_ID');
+
+          const { id: movieGenreId } = existingMovieGenre;
+
+          const deleteMovieGenre =
+            await this.movieRepository.deleteMovieGenreByIdWithT(
+              tx,
+              movieGenreId,
+            );
+
+          if (!deleteMovieGenre)
+            throw new Error('CAUSE_AN_ERROR_WHILE_DELETE_MOVIE_CAST');
+
+          return deleteMovieGenre;
+        },
+      );
+
+      return deleteMovieGenre;
+    } catch (e) {
+      const errorStatusMap = {
+        NO_MOVIE_HAS_TAHT_ID: 404,
+        NO_MOVIE_GENRE_HAS_TAHT_ID: 404,
+        CAUSE_AN_ERROR_WHILE_DELETE_MOVIE_CAST: 500,
       };
 
       const statusCode = errorStatusMap[e.message] || 500;

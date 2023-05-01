@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -9,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { DirectedMovie, Movie, MovieCast } from '@prisma/client';
+import { DirectedMovie, Movie, MovieCast, MovieGenre } from '@prisma/client';
 import { UpdateDirectorConnectMovie } from 'src/commons/DTO/director.dto';
 import {
   ActorNameAndRoleName,
@@ -65,6 +67,12 @@ export class MovieController {
     return await this.movieService.updateMovie({ movieId, ...updateMovieDto });
   }
 
+  @Delete('/:movieId')
+  @HttpCode(204)
+  async deleteMovie(@Param('movieId') movieId: number): Promise<Movie> {
+    return await this.movieService.deleteMovie(movieId);
+  }
+
   @Patch('/:movieId/cast/:actorId')
   async updateMovieCastRoleName(
     @Param('movieId') movieId: number,
@@ -92,6 +100,15 @@ export class MovieController {
     });
   }
 
+  @Delete('/:movieId/cast/:actorId')
+  @HttpCode(204)
+  async deleteMovieCast(
+    @Param('movieId') movieId: number,
+    @Param('actorId') actorId: number,
+  ): Promise<MovieCast> {
+    return await this.movieService.deleteMovieCast({ movieId, actorId });
+  }
+
   @Patch('/:movieId/director/:directorId')
   async updateMovieConnectDirector(
     @Param('movieId') movieId: number,
@@ -103,6 +120,15 @@ export class MovieController {
       directorId,
       updateDirectorName: updateDirectorName.directorName,
     });
+  }
+
+  @Delete('/:movieId/director/:directorId')
+  @HttpCode(204)
+  async deleteDirectedMovie(
+    @Param('movieId') movieId: number,
+    @Param('directorId') directorId: number,
+  ): Promise<DirectedMovie> {
+    return await this.movieService.deleteDirectedMovie({ movieId, directorId });
   }
 
   @Get('/director/:directorName')
@@ -118,6 +144,15 @@ export class MovieController {
     @Query() sortType: GetMoviesByOrderByOption,
   ): Promise<MovieWithGenreAndAssocaitedTable[]> {
     return await this.movieService.getMovieByGenre(genre, sortType);
+  }
+
+  @Delete(':movieId/genres/:genreId')
+  @HttpCode(204)
+  async deleteMovieGenre(
+    @Param('movieId') movieId: number,
+    @Param('genreId') genreId: number,
+  ): Promise<MovieGenre> {
+    return await this.movieService.deleteMovieGenre({ movieId, genreId });
   }
 
   @Put('/:movieId/genres/:genreId')

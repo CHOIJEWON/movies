@@ -48,4 +48,22 @@ export class TeaserRepository {
       data: { url },
     });
   }
+
+  async getTeaserByIdWithT(
+    tx: PrismaService,
+    teaserId: number,
+  ): Promise<Teaser> {
+    return tx.teaser.findFirst({
+      where: { id: teaserId },
+    });
+  }
+
+  async deleteTeaserByIdWithT(
+    tx: PrismaService,
+    teaserId: number,
+  ): Promise<Teaser> {
+    return tx.teaser.delete({
+      where: { id: teaserId },
+    });
+  }
 }

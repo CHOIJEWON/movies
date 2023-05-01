@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Put } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, Param, Put } from '@nestjs/common';
 import { Director } from '@prisma/client';
 import { DirectorService } from './director.service';
 
@@ -15,5 +15,13 @@ export class DirectorController {
       directorId,
       directorName,
     });
+  }
+
+  @Delete('/:directorId')
+  @HttpCode(204)
+  async deleteActor(
+    @Param('directorId') directorId: number,
+  ): Promise<Director> {
+    return await this.directorSerivce.deleteDirector(directorId);
   }
 }
