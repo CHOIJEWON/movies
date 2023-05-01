@@ -3,8 +3,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export function setupSwagger(app: INestApplication): void {
   const options = new DocumentBuilder()
-    .setTitle('API Docs')
-    .setDescription('API description')
+    .setTitle('과제 API Docs')
+    .setDescription('지원자 최제원')
     .setVersion('1.0.0')
     .build();
 

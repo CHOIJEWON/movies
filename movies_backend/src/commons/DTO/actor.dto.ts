@@ -1,4 +1,4 @@
-import { PickType } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
@@ -13,11 +13,19 @@ export class CreateActorWithRoleName {
   @IsNotEmpty()
   @IsString()
   @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
+  @ApiProperty({
+    example: '최우식',
+    description: '배우의 배역 이름을 할당합니다',
+  })
   name: string;
 
   @IsNotEmpty()
   @IsString()
   @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
+  @ApiProperty({
+    example: '아들',
+    description: '배우의 배역 이름을 할당합니다',
+  })
   roleName: string;
 }
 

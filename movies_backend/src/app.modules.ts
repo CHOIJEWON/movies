@@ -7,7 +7,6 @@ import { GenreModule } from './genre/genre.module';
 import { MovieModule } from './movie/movie.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { TeaserModule } from './teaser/teaser.module';
-import { TestModule } from './test/test.module';
 
 @Module({
   imports: [
@@ -24,7 +23,6 @@ import { TestModule } from './test/test.module';
     PrismaModule,
     TeaserModule,
     ActorModule,
-    TestModule,
     MovieModule,
     GenreModule,
     DirectorModule,

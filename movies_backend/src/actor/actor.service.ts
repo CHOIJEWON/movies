@@ -62,7 +62,7 @@ export class ActorService {
             actorId,
           );
 
-          if (!existingActor) throw new Error(`c`);
+          if (!existingActor) throw new Error('NO_ACTOR_HAS_TAHT_ID');
 
           if (existingActor.name === name)
             throw new Error('NO_CHANGE_IN_ACTOR_NAME');
