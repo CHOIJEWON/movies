@@ -1,4 +1,5 @@
-import { Director, PrismaClient } from '@prisma/client';
+import { DirectedMovie, Director, PrismaClient } from '@prisma/client';
+import { UpdateDirectorName } from 'src/commons/DTO/director.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 export class DirectorRepository {
@@ -19,6 +20,49 @@ export class DirectorRepository {
       update: {},
       create: { directorName },
     });
+  }
+
+  async createDirecotWithT(
+    tx: PrismaService,
+    directorName: string,
+  ): Promise<Director> {
+    return await tx.director.create({
+      data: { directorName },
+    });
+  }
+  async getDirectorByNameWithT(
+    tx: PrismaService,
+    directorName: string,
+  ): Promise<Director> {
+    return await tx.director.findFirst({
+      where: { directorName },
+    });
+  }
+
+  async getDirectorByIdWithT(
+    tx: PrismaService,
+    directorId: number,
+  ): Promise<Director> {
+    return await tx.director.findFirst({
+      where: { id: directorId },
+    });
+  }
+
+  async updateDirectorNameWithT(
+    tx: PrismaService,
+    { directorId, directorName }: UpdateDirectorName,
+  ): Promise<Director> {
+    return await tx.director.update({
+      where: { id: directorId },
+      data: { directorName },
+    });
+  }
+
+  async getDirectorConnectMovieByIdWithT(
+    tx: PrismaService,
+    directorId: number,
+  ): Promise<DirectedMovie> {
+    return await tx.directedMovie.findFirst({ where: { directorId } });
   }
 
   async getDirectorInfoByNameWithAssociateTable(directorName: string) {

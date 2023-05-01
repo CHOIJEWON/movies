@@ -1,5 +1,6 @@
+import { PickType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateActorDto {
   roleName: string;
@@ -18,4 +19,12 @@ export class CreateActorWithRoleName {
   @IsString()
   @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
   roleName: string;
+}
+
+export class UpdateActorName extends PickType(CreateActorWithRoleName, [
+  'name',
+] as const) {
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  actorId: number;
 }

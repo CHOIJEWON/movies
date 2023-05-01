@@ -17,6 +17,12 @@ export class GenreRepository {
     });
   }
 
+  async getGenreById(tx: PrismaService, genre: string): Promise<Genre> {
+    return await tx.genre.findFirst({
+      where: { genre },
+    });
+  }
+
   async getMoviesByGenre(genre: string, sortType: string) {
     const orderByClause =
       sortType === 'GRADE_DESC'
