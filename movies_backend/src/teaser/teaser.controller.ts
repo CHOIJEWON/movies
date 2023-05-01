@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Put } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, Param, Put } from '@nestjs/common';
 import { Teaser } from '@prisma/client';
 import { UpdateTeaserPickUrl } from 'src/commons/DTO/teaser.dto';
 import { TeaserService } from './teaser.service';
@@ -18,5 +18,11 @@ export class TeaserController {
       teaserId,
       url: teaser.url,
     });
+  }
+
+  @Delete('/:teaserId')
+  @HttpCode(204)
+  async delteTeaser(@Param('teaserId') teaserId: number): Promise<Teaser> {
+    return await this.teaserService.deleteTeaser(teaserId);
   }
 }

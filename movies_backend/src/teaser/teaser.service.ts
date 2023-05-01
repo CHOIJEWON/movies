@@ -79,4 +79,41 @@ export class TeaserService {
       throw new HttpException(e.message, statusCode);
     }
   }
+
+  async deleteTeaser(teaserId: number): Promise<Teaser> {
+    try {
+      const deleteTeaser = await this.prismaService.$transaction(
+        async (tx: PrismaService) => {
+          const existingTeaser = await this.teaserRepository.getTeaserByIdWithT(
+            tx,
+            teaserId,
+          );
+
+          if (!existingTeaser) throw new Error('NO_TEASER_HAS_TAHT_ID');
+
+          const dleteTeaserById =
+            await this.teaserRepository.deleteTeaserByIdWithT(
+              tx,
+              existingTeaser.id,
+            );
+
+          if (!dleteTeaserById)
+            throw new Error('CAUSE_AN_ERROR_WHILE_DELETE_TEASER');
+
+          return dleteTeaserById;
+        },
+      );
+
+      return deleteTeaser;
+    } catch (e) {
+      const errorStatusMap = {
+        NO_TEASER_HAS_TAHT_ID: 500,
+        CAUSE_AN_ERROR_WHILE_DELETE_TEASER: 500,
+      };
+
+      const statusCode = errorStatusMap[e.message] || 500;
+
+      throw new HttpException(e.message, statusCode);
+    }
+  }
 }

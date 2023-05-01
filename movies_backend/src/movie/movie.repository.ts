@@ -94,7 +94,7 @@ export class MovieRepository {
     });
   }
 
-  async getMovieCastByIdsWith(
+  async getMovieCastByIdsWithT(
     tx: PrismaService,
     { movieId, actorId }: GetMovieCast,
   ): Promise<MovieCast> {
@@ -213,6 +213,61 @@ export class MovieRepository {
     return await this.prisma.movie.findFirst({
       where: { id: movieId },
       select: movieSelectQuery,
+    });
+  }
+
+  async deleteMovieByIdWithT(
+    tx: PrismaService,
+    movieId: number,
+  ): Promise<Movie> {
+    await tx.directedMovie.deleteMany({
+      where: { movieId },
+    });
+    await tx.movieCast.deleteMany({
+      where: { movieId },
+    });
+    await tx.movieGenre.deleteMany({
+      where: { movieId },
+    });
+    await tx.teaser.deleteMany({
+      where: { movieId },
+    });
+
+    return tx.movie.delete({
+      where: { id: movieId },
+    });
+  }
+
+  async getMovieByIdWithT(tx: PrismaService, movieId: number): Promise<Movie> {
+    return await tx.movie.findFirst({
+      where: { id: movieId },
+    });
+  }
+
+  async deleteMovieCastById(
+    tx: PrismaService,
+    movieCastId: number,
+  ): Promise<MovieCast> {
+    return await tx.movieCast.delete({
+      where: { id: movieCastId },
+    });
+  }
+
+  async deleteDirectedMovieById(
+    tx: PrismaService,
+    directedMovieId: number,
+  ): Promise<DirectedMovie> {
+    return await tx.directedMovie.delete({
+      where: { id: directedMovieId },
+    });
+  }
+
+  async deleteMovieGenreByIdWithT(
+    tx: PrismaService,
+    movieGenreId: number,
+  ): Promise<MovieGenre> {
+    return await tx.movieGenre.delete({
+      where: { id: movieGenreId },
     });
   }
 }

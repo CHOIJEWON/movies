@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Put } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, Param, Put } from '@nestjs/common';
 import { Actor } from '@prisma/client';
 import { ActorService } from './actor.service';
 
@@ -15,5 +15,11 @@ export class ActorController {
       actorId,
       name: actorName,
     });
+  }
+
+  @Delete('/:actorId')
+  @HttpCode(204)
+  async deleteActor(@Param('actorId') actorId: number): Promise<Actor> {
+    return await this.actorService.deleteActor(actorId);
   }
 }

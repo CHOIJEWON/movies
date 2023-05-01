@@ -65,6 +65,33 @@ export class DirectorRepository {
     return await tx.directedMovie.findFirst({ where: { directorId } });
   }
 
+  async getDiretedMoviesByIdWithT(
+    tx: PrismaService,
+    directorId: number,
+  ): Promise<DirectedMovie[]> {
+    return await tx.directedMovie.findMany({
+      where: { directorId },
+    });
+  }
+
+  async deleteDirectorWithT(
+    tx: PrismaService,
+    direcotrId: number,
+  ): Promise<Director> {
+    return await tx.director.delete({
+      where: { id: direcotrId },
+    });
+  }
+
+  async deleDirectedMovieWithT(
+    tx: PrismaService,
+    directorId: number,
+  ): Promise<DirectedMovie> {
+    return tx.directedMovie.delete({
+      where: { id: directorId },
+    });
+  }
+
   async getDirectorInfoByNameWithAssociateTable(directorName: string) {
     return await this.prisma.director.findFirst({
       where: { directorName },
