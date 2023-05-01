@@ -1,10 +1,11 @@
-import { IntersectionType } from '@nestjs/swagger';
+import { IntersectionType, PickType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayUnique,
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   IsUrl,
   Validate,
@@ -64,6 +65,44 @@ export class CreateMovieDto {
   releaseDate: number;
 }
 
+export class UpdateMovieDto {
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
+  title?: string;
+
+  @IsOptional()
+  @IsUrl()
+  titleImg?: string;
+
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
+  originalTitle?: string;
+
+  @IsOptional()
+  @IsNumber()
+  grade?: number;
+
+  @IsOptional()
+  @IsString()
+  playTime?: string;
+
+  @IsOptional()
+  @IsString()
+  synopsis?: string;
+
+  @IsOptional()
+  @IsNumber()
+  releaseDate?: number;
+}
+
+export class UpdateMovieWithT extends UpdateMovieDto {
+  @IsNotEmpty()
+  @IsNumber()
+  movieId: number;
+}
+
 export class CreateMovieAssocationTable extends CreateMovieDto {
   @IsNotEmpty()
   @IsEnum(GenreEnum, { each: true })
@@ -81,6 +120,92 @@ export class CreateMovieAssocationTable extends CreateMovieDto {
   @IsNotEmpty()
   @Type(() => CreateActorWithRoleName)
   actorDetails: CreateActorWithRoleName[];
+}
+
+export class UpdateTeasr {
+  @IsNotEmpty()
+  @IsUrl()
+  url: string;
+}
+export class UpdateRoleNameWithIds extends PickType(CreateActorWithRoleName, [
+  'roleName',
+] as const) {
+  @IsNotEmpty()
+  @IsNumber()
+  actorId: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  movieId: number;
+}
+
+export class UpdateRoleName extends PickType(CreateActorWithRoleName, [
+  'roleName',
+] as const) {}
+
+export class GetMovieCast extends PickType(UpdateRoleNameWithIds, [
+  'actorId',
+  'movieId',
+] as const) {}
+
+export class UpdateRoleNameWithCastId extends PickType(UpdateRoleName, [
+  'roleName',
+] as const) {
+  @IsNotEmpty()
+  castId: number;
+}
+
+export class ActorNameAndRoleName extends PickType(CreateActorWithRoleName, [
+  'name',
+] as const) {
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
+  roleName: string;
+}
+
+export class UpdateMovieCastConnection extends PickType(ActorNameAndRoleName, [
+  'name',
+  'roleName',
+]) {
+  @IsNotEmpty()
+  @IsNumber()
+  movieId: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  actorId: number;
+}
+
+export class MovieGenreDto {
+  @IsNotEmpty()
+  @IsNumber()
+  movieId: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  genreId: number;
+
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => value.toUpperCase())
+  @IsEnum(GenreEnum)
+  genre: string;
+}
+
+export class InputGerne extends PickType(MovieGenreDto, ['genre'] as const) {}
+
+export class GetMovieGenreWithIds extends PickType(MovieGenreDto, [
+  'genreId',
+  'movieId',
+] as const) {}
+
+export class UpdateMovieGenre extends PickType(MovieGenreDto, [
+  'genreId',
+] as const) {
+  @IsNotEmpty()
+  @IsNumber()
+  movieGenreId: number;
 }
 
 export class CreateMovieWithAssocationTable extends IntersectionType(
@@ -119,6 +244,30 @@ export class FindMovieByTitleDto {
   title: string;
 }
 
+export class MovieAndDirectorId {
+  @IsNotEmpty()
+  @IsNumber()
+  movieId: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  directorId: number;
+}
+
+export class UpdateDirectedMovie extends PickType(MovieAndDirectorId, [
+  'directorId',
+] as const) {
+  @IsNotEmpty()
+  @IsNumber()
+  directedId: number;
+}
+
+export class UpdateDirectedMovieByDirectorName extends MovieAndDirectorId {
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => value.toUpperCase().replace(/ /g, '_'))
+  updateDirectorName: string;
+}
 export class CreateMovieWithAssocationInRepositoryDto extends CreateMovieDto {
   directorId: number;
   genresIds: number[];

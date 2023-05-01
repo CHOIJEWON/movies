@@ -44,7 +44,7 @@ interface DirectorMovie {
     directorName: string;
   };
 }
-
+9;
 interface Genre {
   genre: {
     genre: string;

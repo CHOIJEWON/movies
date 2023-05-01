@@ -1,5 +1,21 @@
-import { Movie, Prisma, PrismaClient } from '@prisma/client';
-import { CreateMovieWithAssocationInRepositoryDto } from 'src/commons/DTO/movie.dto';
+import {
+  DirectedMovie,
+  Movie,
+  MovieCast,
+  MovieGenre,
+  Prisma,
+  PrismaClient,
+} from '@prisma/client';
+import {
+  CreateMovieWithAssocationInRepositoryDto,
+  GetMovieCast,
+  GetMovieGenreWithIds,
+  MovieAndDirectorId,
+  UpdateDirectedMovie,
+  UpdateMovieGenre,
+  UpdateMovieWithT,
+  UpdateRoleNameWithCastId,
+} from 'src/commons/DTO/movie.dto';
 import { GetOneMovieWithAssociation } from 'src/commons/interface/movie.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { movieSelectQuery } from './movie.select.query';
@@ -63,6 +79,113 @@ export class MovieRepository {
         Teaser: {
           create: teasers.map((url) => ({ url })),
         },
+      },
+    });
+  }
+
+  async getDirectedMovieByIdsWithT(
+    tx: PrismaService,
+    { movieId, directorId }: MovieAndDirectorId,
+  ): Promise<DirectedMovie> {
+    return await tx.directedMovie.findFirst({
+      where: {
+        AND: [{ movieId }, { directorId }],
+      },
+    });
+  }
+
+  async getMovieCastByIdsWith(
+    tx: PrismaService,
+    { movieId, actorId }: GetMovieCast,
+  ): Promise<MovieCast> {
+    return await tx.movieCast.findFirst({
+      where: {
+        AND: [{ movieId }, { actorId }],
+      },
+    });
+  }
+
+  async getOnlyMovieByIdWithT(tx: PrismaService, id: number): Promise<Movie> {
+    return await tx.movie.findFirst({
+      where: { id },
+    });
+  }
+
+  async updateDirectedMovieWithT(
+    tx: PrismaService,
+    { directedId, directorId }: UpdateDirectedMovie,
+  ): Promise<DirectedMovie> {
+    return await tx.directedMovie.update({
+      where: { id: directedId },
+      data: { directorId },
+    });
+  }
+
+  async updateRoleNameWithT(
+    tx: PrismaService,
+    { castId, roleName }: UpdateRoleNameWithCastId,
+  ) {
+    return await tx.movieCast.update({
+      where: { id: castId },
+      data: { roleName },
+    });
+  }
+
+  async updateMovieCastWithT(
+    tx: PrismaService,
+    { castId, roleName, actorId },
+  ): Promise<MovieCast> {
+    return await tx.movieCast.update({
+      where: { id: castId },
+      data: { roleName, actorId },
+    });
+  }
+
+  async getMovieGenre(
+    tx: PrismaService,
+    { movieId, genreId }: GetMovieGenreWithIds,
+  ): Promise<MovieGenre> {
+    return await tx.movieGenre.findFirst({
+      where: {
+        AND: [{ movieId }, { genreId }],
+      },
+    });
+  }
+
+  async updateMovieGenre(
+    tx: PrismaService,
+    { movieGenreId, genreId }: UpdateMovieGenre,
+  ): Promise<MovieGenre> {
+    return await tx.movieGenre.update({
+      where: { id: movieGenreId },
+      data: { genreId },
+    });
+  }
+
+  async updateOnlyMovieWithT(
+    tx: PrismaService,
+    updateMovie: UpdateMovieWithT,
+  ): Promise<Movie> {
+    const {
+      movieId: id,
+      title,
+      titleImg,
+      originalTitle,
+      grade,
+      playTime,
+      synopsis,
+      releaseDate,
+    } = updateMovie;
+    return await tx.movie.update({
+      where: { id },
+      data: {
+        title,
+        titleImg,
+        originalTitle,
+        grade,
+        playTime,
+        synopsis,
+        releaseDate,
       },
     });
   }
