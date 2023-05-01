@@ -1,4 +1,4 @@
-import { PickType } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsUrl } from 'class-validator';
 
 export class UpdateTeaserDtoWithIds {
@@ -12,6 +12,11 @@ export class UpdateTeaserDtoWithIds {
 
   @IsNotEmpty()
   @IsUrl()
+  @ApiProperty({
+    description: '티저 url',
+    type: 'url',
+    example: 'http://test-teaser-4.com',
+  })
   url: string;
 }
 
